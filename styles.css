@@ -204,16 +204,25 @@ img{max-width:100%}
    flex rather than translateX so the step animations own `transform` outright. */
 .dancer{
   position:absolute;left:0;right:0;top:1%;bottom:12px;
-  display:flex;align-items:flex-end;justify-content:center;
   transform-origin:50% 100%;
   will-change:transform;
 }
-.dancer img{
+/* every pose stacked in one grid cell; only .on is visible. visibility (not
+   display:none) keeps them laid out, so the browser holds their decoded
+   bitmaps and a pose change costs nothing. */
+.poses{
+  position:absolute;inset:0;
+  display:grid;justify-items:center;align-items:end;
+}
+.poses img{
+  grid-area:1/1;
   height:100%;width:auto;display:block;
   filter:drop-shadow(0 0 16px rgba(255,45,149,.55)) drop-shadow(0 6px 10px rgba(0,0,0,.6));
   transform-origin:50% 100%;
+  visibility:hidden;
 }
-.dancer img.flip{transform:scaleX(-1)}
+.poses img.on{visibility:visible}
+.poses img.on.flip{transform:scaleX(-1)}
 .dancer .shadow{
   position:absolute;bottom:-6px;left:50%;margin-left:-22vmin;
   width:44vmin;max-width:220px;height:12px;border-radius:50%;
@@ -242,7 +251,7 @@ img{max-width:100%}
 @keyframes stepLhot{0%{transform:none}40%{transform:translateX(-14%) rotate(-9deg) scale(1.07)}100%{transform:none}}
 @keyframes stepRhot{0%{transform:none}40%{transform:translateX(14%) rotate(9deg) scale(1.07)}100%{transform:none}}
 @keyframes jumpHot {0%{transform:translateY(0) scale(1.06,.9)}45%{transform:translateY(-21%) scale(.95,1.09)}100%{transform:none}}
-#app.fever .dancer img{filter:drop-shadow(0 0 26px var(--yellow)) drop-shadow(0 0 12px var(--magenta))}
+#app.fever .poses img.on{filter:drop-shadow(0 0 26px var(--yellow)) drop-shadow(0 0 12px var(--magenta))}
 
 /* judgement + combo - sit over the highway, anchored at its far end so the
    read-out never crowds the receptors the player is watching */

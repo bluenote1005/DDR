@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Bungee:wght@400&family=Black+Han+Sans&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
 
@@ -55,7 +55,9 @@
   <section class="stage" id="stage">
     <div class="spot" id="spot"></div>
     <div class="dancer" id="dancer">
-      <img id="charImg" src="assets/pose_peace.webp" alt="서영이" draggable="false">
+      <!-- all poses live in the DOM at once; switching is a class toggle, never
+           an src swap, so the character can never blank out mid-song -->
+      <div class="poses" id="poses" role="img" aria-label="서영이"></div>
       <div class="shadow"></div>
     </div>
 
@@ -164,8 +166,8 @@
 
 </div>
 
-<script src="src/audio.js?v=3"></script>
-<script src="src/chart.js?v=3"></script>
-<script src="src/game.js?v=3"></script>
+<script src="src/audio.js?v=5"></script>
+<script src="src/chart.js?v=5"></script>
+<script src="src/game.js?v=5"></script>
 </body>
 </html>

@@ -31,7 +31,7 @@
   var elJudge = $('judge'), elCombo = $('combo'), elComboNum = $('comboNum');
   var elBanner = $('banner'), elBannerText = $('bannerText');
   var elBig = $('bigtext'), elCount = $('countdown');
-  var elChar = $('charImg'), elDancer = $('dancer');
+  var elPoses = $('poses'), elDancer = $('dancer');
   var elSkyline = $('skyline'), elBpm = $('bpmBadge'), elPause = $('pauseBtn');
   var elSongTitle = $('songTitle'), elBpmVal = $('bpmVal'), elSongList = $('songList');
   var titleScreen = $('titleScreen'), resultScreen = $('resultScreen'), pauseScreen = $('pauseScreen');
@@ -327,10 +327,30 @@
   var IDLE_POSES  = [['hips', 0], ['peace', 0], ['armsout', 0], ['point', 0], ['hips', 1], ['cheer', 0]];
   var laneTick = [0, 0, 0, 0], idleTick = 0;
 
+  // one <img> per pose, built once. Reassigning src on a single element made
+  // it "unavailable" until the new bitmap was ready - measured at ~4-6 swaps a
+  // second, that showed up as the character blinking out mid-song.
+  var poseEl = {}, curPose = null;
+  (function buildPoses() {
+    POSES.forEach(function (n) {
+      var im = new Image();
+      im.src = POSE_SRC[n];
+      im.alt = '';
+      im.draggable = false;
+      if (im.decode) im.decode().catch(function () {});
+      poseEl[n] = im;
+      elPoses.appendChild(im);
+    });
+  })();
+
   function setPose(name, flip) {
-    var src = POSE_SRC[name] || POSE_SRC.peace;
-    if (elChar.getAttribute('src') !== src) elChar.setAttribute('src', src);
-    elChar.classList.toggle('flip', !!flip);
+    var el = poseEl[name] || poseEl.peace;
+    if (el !== curPose) {
+      if (curPose) curPose.classList.remove('on');
+      el.classList.add('on');
+      curPose = el;
+    }
+    el.classList.toggle('flip', !!flip);
   }
   function animate() {
     elDancer.className = 'dancer';
@@ -705,15 +725,9 @@
   });
 
   /* ----------------------------- boot ------------------------------- */
-  // decode every sprite up front so a pose swap on the beat never hitches
-  POSES.forEach(function (n) {
-    var im = new Image();
-    im.src = POSE_SRC[n];
-    if (im.decode) im.decode().catch(function () {});
-  });
-
   buildSongList();
   applySong(Snd.songs[0].id);
+  setPose('peace');   // stage shows her behind the title overlay
   layout();
   updateHud();
   // idle attract-mode breathing on the title screen
