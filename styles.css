@@ -207,16 +207,24 @@ img{max-width:100%}
   transform-origin:50% 100%;
   will-change:transform;
 }
-/* every pose stacked in one grid cell; only .on is visible. visibility (not
+/* Every pose stacked in the same box; only .on is visible. visibility (not
    display:none) keeps them laid out, so the browser holds their decoded
-   bitmaps and a pose change costs nothing. */
-.poses{
-  position:absolute;inset:0;
-  display:grid;justify-items:center;align-items:end;
-}
+   bitmaps and a pose change costs nothing.
+
+   Each sprite is absolutely positioned and sized with object-fit rather than
+   height:100%. In a grid/auto-sized row the row height depends on the image
+   and the image's percentage height depends on the row - that circularity
+   resolved against the intrinsic size, and in portrait (where the sprite is
+   taller than the stage) it blew the character up past the stage and clipped
+   her away. object-fit has no such dependency. All 12 share one canvas, so
+   contain scales them identically and 50% 100% keeps the ground line pinned
+   to the bottom. */
+.poses{position:absolute;inset:0}
 .poses img{
-  grid-area:1/1;
-  height:100%;width:auto;display:block;
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:contain;object-position:50% 100%;
+  display:block;max-width:none;
   filter:drop-shadow(0 0 16px rgba(255,45,149,.55)) drop-shadow(0 6px 10px rgba(0,0,0,.6));
   transform-origin:50% 100%;
   visibility:hidden;
