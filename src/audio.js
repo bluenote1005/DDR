@@ -1,5 +1,5 @@
 /* =========================================================================
-   audio.js - procedural soundtrack for ARCADE DANCE
+   audio.js - procedural soundtrack for 서영이와 춤을!
    Four tracks, each generated live with the Web Audio API. The chart is
    authored against the same beat grid, so notes and music can never drift
    apart (no media decoding / buffering jitter on any device).

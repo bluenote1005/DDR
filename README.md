@@ -1,4 +1,4 @@
-# ARCADE DANCE — NEON STEP
+# 서영이와 춤을!
 
 `arcade_dance_neon_step.mp4` 의 화면 구성을 그대로 옮긴, **손가락으로 터치하는 모바일 펌프 게임**입니다.
 수록곡 4곡, 캐릭터 포즈 12종.
@@ -36,7 +36,7 @@ iOS/Android 모두 "홈 화면에 추가" 하면 전체화면으로 실행됩니
 | 네온 그리드 바닥 + 석양 + 이퀄라이저 스카이라인 | 배경 (음악에 반응) |
 | DANCE / PADS 패널, ← ↓ ↑ → 리셉터 | 노트 하이웨이 |
 | PERFECT! / COMBO 표시 | 하이웨이 위 판정 표시 |
-| ARCADE DANCE! → 3 / 2 / 1 → GO! | 인트로 연출 |
+| ARCADE DANCE! → 3 / 2 / 1 → GO! | 인트로 연출 (타이틀은 「서영이와 춤을!」) |
 | FEVER INCOMING! 경고 띠 | 피버 2 마디 전 예고, 피버 구간 점수 2배 |
 | FULL COMBO!! / STAGE CLEAR | 결과 화면 (랭크 S~F) |
 

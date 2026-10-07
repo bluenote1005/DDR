@@ -1,5 +1,5 @@
 /* =========================================================================
-   chart.js - step charts for ARCADE DANCE
+   chart.js - step charts for 서영이와 춤을!
    Patterns are authored on a 16th-note grid against the same bar structure
    the arrangement in audio.js uses, so steps always land on the music.
 

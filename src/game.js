@@ -1,5 +1,5 @@
 /* =========================================================================
-   game.js - ARCADE DANCE
+   game.js - 서영이와 춤을! (ARCADE DANCE)
    4-pad touch rhythm game. Canvas highway + DOM stage.
    ========================================================================= */
 (function () {
@@ -414,7 +414,7 @@
 
   function buildTimeline() {
     var b = Snd.spb, bar = Snd.spbar, ev = [];
-    ev.push({ t: 0.05, fn: function () { showBig('ARCADE', 'DANCE!', 1500); } });
+    ev.push({ t: 0.05, fn: function () { showBig('서영이와', '춤을!', 1500); } });
     ev.push({ t: b * 2, fn: function () { showCount('3'); } });
     ev.push({ t: b * 4, fn: function () { showCount('2'); } });
     ev.push({ t: b * 6, fn: function () { showCount('1'); } });
@@ -669,7 +669,7 @@
     root.setProperty('--beat', Snd.spb.toFixed(4) + 's');
     root.setProperty('--bar', Snd.spbar.toFixed(4) + 's');
     root.setProperty('--accent', sg.accent);
-    document.title = sg.name + ' ' + sg.bpm + ' — Arcade Dance';
+    document.title = sg.name + ' ' + sg.bpm + ' — 서영이와 춤을!';
     return sg;
   }
 
