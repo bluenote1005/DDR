@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#140425">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ARCADE DANCE — 4 PADS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Bungee:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- The "screen" is everything the arcade cabinet shows above the pad panel:
+       neon stage, HUD overlay and the dancer. Keeping it as one box makes the
+       horizon line up with the dancer in both portrait and landscape. -->
+  <div class="screen">
+
+  <!-- ===================== BACKGROUND STAGE ===================== -->
+  <div class="bg">
+    <div class="bg-sky"></div>
+    <div class="bg-sun"></div>
+    <div class="bg-skyline" id="skyline"></div>
+    <div class="bg-floor"><div class="bg-grid"></div></div>
+    <div class="bg-beams"><i></i><i></i><i></i><i></i></div>
+    <div class="bg-scan"></div>
+  </div>
+
+  <!-- ===================== HUD ===================== -->
+  <header class="hud">
+    <div class="hud-plate">
+      <div class="hud-stage">STAGE <span id="stageNo">01</span></div>
+      <div class="hud-song" id="songTitle">NEON STEP</div>
+      <div class="hud-score">SCORE <span id="scoreVal">0000000</span></div>
+    </div>
+
+    <div class="hud-right">
+      <div class="bpm" id="bpmBadge"><b id="bpmVal">128</b><span>BPM</span></div>
+    </div>
+
+    <div class="groove">
+      <div class="groove-bar"><i id="grooveFill"></i></div>
+      <div class="groove-pips" id="groovePips"></div>
+      <div class="groove-label">GROOVE</div>
+    </div>
+  </header>
+
+  <!-- ===================== DANCER STAGE ===================== -->
+  <section class="stage" id="stage">
+    <div class="spot" id="spot"></div>
+    <div class="dancer" id="dancer">
+      <img id="charImg" src="assets/pose_peace.webp" alt="댄서 캐릭터" draggable="false">
+      <div class="shadow"></div>
+    </div>
+
+    <div class="banner" id="banner"><div class="banner-tape"></div><span id="bannerText">FEVER INCOMING!</span><div class="banner-tape"></div></div>
+    <div class="bigtext" id="bigtext"></div>
+  </section>
+
+    <footer class="footer"><span>PLAYER 1</span><i>·</i><span class="blink">INSERT COIN</span></footer>
+  </div><!-- /.screen -->
+
+  <!-- ===================== NOTE HIGHWAY ===================== -->
+  <section class="panel" id="panel">
+    <div class="panel-label"><span>DANCE</span><span>PADS</span></div>
+    <canvas id="highway"></canvas>
+
+    <!-- judgement + combo read out over the highway, as in the arcade cabinet -->
+    <div class="stage-fx">
+      <div class="judge" id="judge"></div>
+      <div class="combo" id="combo"><b id="comboNum">0</b><span>COMBO</span></div>
+    </div>
+
+    <div class="pads" id="pads">
+      <button class="pad" data-lane="0" aria-label="왼쪽"></button>
+      <button class="pad" data-lane="1" aria-label="아래"></button>
+      <button class="pad" data-lane="2" aria-label="위"></button>
+      <button class="pad" data-lane="3" aria-label="오른쪽"></button>
+    </div>
+  </section>
+
+  <!-- ===================== TITLE ===================== -->
+  <div class="overlay show" id="titleScreen">
+    <div class="ov-card">
+      <h1 class="logo"><span>ARCADE</span><em>DANCE!</em></h1>
+      <p class="sub">4 PADS &nbsp;·&nbsp; TOUCH TO STEP</p>
+
+      <div class="opt">
+        <label>곡 선택</label>
+        <div class="songs" id="songList"></div>
+      </div>
+
+      <div class="opts">
+        <div class="opt">
+          <label>난이도</label>
+          <div class="seg" id="diffSeg">
+            <button data-v="easy">EASY</button>
+            <button data-v="normal" class="on">NORMAL</button>
+            <button data-v="hard">HARD</button>
+          </div>
+        </div>
+        <div class="opt">
+          <label>노트 방향</label>
+          <div class="seg" id="dirSeg">
+            <button data-v="down" class="on">↓ 모바일</button>
+            <button data-v="up">↑ 아케이드</button>
+          </div>
+        </div>
+        <div class="opt">
+          <label>스피드</label>
+          <div class="seg" id="speedSeg">
+            <button data-v="0.8">x0.8</button>
+            <button data-v="1" class="on">x1.0</button>
+            <button data-v="1.3">x1.3</button>
+            <button data-v="1.6">x1.6</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="start" id="startBtn">PRESS TO START</button>
+      <p class="hint">엄지로 아래 4개 패드를 두드리세요 · 키보드: ← ↓ ↑ →</p>
+    </div>
+  </div>
+
+  <!-- ===================== RESULT ===================== -->
+  <div class="overlay" id="resultScreen">
+    <div class="ov-card result">
+      <h2 id="resultTitle">STAGE CLEAR</h2>
+      <div class="rank" id="rankBadge">S</div>
+      <div class="rows">
+        <div class="row perfect"><span>PERFECT</span><b id="rPerfect">0</b></div>
+        <div class="row great"><span>GREAT</span><b id="rGreat">0</b></div>
+        <div class="row good"><span>GOOD</span><b id="rGood">0</b></div>
+        <div class="row miss"><span>MISS</span><b id="rMiss">0</b></div>
+        <div class="row total"><span>MAX COMBO</span><b id="rCombo">0</b></div>
+        <div class="row total"><span>SCORE</span><b id="rScore">0000000</b></div>
+        <div class="row total"><span>ACCURACY</span><b id="rAcc">100%</b></div>
+      </div>
+      <div class="res-btns">
+        <button class="start sm" id="retryBtn">RETRY</button>
+        <button class="start sm ghost" id="backBtn">TITLE</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="countdown" id="countdown"></div>
+
+  <button class="pausebtn" id="pauseBtn" aria-label="일시정지">II</button>
+  <div class="overlay" id="pauseScreen">
+    <div class="ov-card">
+      <h2 class="pausehead">PAUSED</h2>
+      <div class="res-btns">
+        <button class="start sm" id="resumeBtn">RESUME</button>
+        <button class="start sm ghost" id="quitBtn">QUIT</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="src/audio.js"></script>
+<script src="src/chart.js"></script>
+<script src="src/game.js"></script>
+</body>
+</html>

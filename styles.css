@@ -1,0 +1,527 @@
+/* =========================================================
+   ARCADE DANCE - neon step (mobile)
+   palette lifted from the reference footage
+   ========================================================= */
+:root{
+  --ink:#0b0318;
+  --deep:#1a0733;
+  --violet:#3d1566;
+  --magenta:#ff2d95;
+  --pink:#ff6ad5;
+  --cyan:#22e3ff;
+  --green:#4fe36b;
+  --yellow:#ffd21e;
+  --orange:#ff9a1e;
+  --purple:#8b3df0;
+
+  /* Press Start 2P / Bungee carry no Hangul, so a Korean face follows in each
+     stack - ASCII keeps the arcade look, Korean stays readable. */
+  --pixel:"Press Start 2P", "Apple SD Gothic Neo", "Malgun Gothic", ui-monospace, monospace;
+  --display:"Bungee", "Apple SD Gothic Neo", "Malgun Gothic", "Arial Black", system-ui, sans-serif;
+  --kr:"Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+
+  /* percentages of #app, not vh: the embedded/mobile browsers we target report
+     a vh that does not match the real viewport once the URL bar is involved. */
+  --panel-h: 42%;            /* note highway height in portrait */
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--ink);overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:var(--pixel);
+  color:#fff;
+  touch-action:none;
+  user-select:none;-webkit-user-select:none;
+}
+img{max-width:100%}
+
+#app{
+  position:relative;
+  width:100%;height:100dvh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  isolation:isolate;
+}
+
+/* the cabinet screen: stage art + HUD, everything above the pad panel */
+.screen{
+  position:relative;
+  flex:1 1 auto;min-height:0;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* ============================ BACKGROUND ============================ */
+.bg{position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--ink)}
+.bg-sky{
+  position:absolute;inset:0 0 38% 0;
+  background:
+    radial-gradient(120% 90% at 50% 100%, rgba(255,45,149,.38), transparent 62%),
+    radial-gradient(90% 70% at 15% 10%, rgba(139,61,240,.35), transparent 70%),
+    radial-gradient(90% 70% at 85% 5%, rgba(34,227,255,.18), transparent 70%),
+    linear-gradient(180deg,#140425 0%, #2a0a4d 55%, #4a1163 100%);
+}
+.bg-sun{
+  position:absolute;left:50%;bottom:34%;transform:translate(-50%,0);
+  width:min(50vw,250px);aspect-ratio:1;border-radius:50%;
+  background:linear-gradient(180deg,#ffd21e,#ff6ad5 48%,#8b3df0);
+  opacity:.5;
+  -webkit-mask-image:repeating-linear-gradient(180deg,#000 0 14px,transparent 14px 20px);
+          mask-image:repeating-linear-gradient(180deg,#000 0 14px,transparent 14px 20px);
+  animation:sunPulse calc(var(--bar,1.875s) * 2) ease-in-out infinite;
+}
+@keyframes sunPulse{50%{opacity:.68}}
+
+/* equaliser skyline */
+.bg-skyline{position:absolute;left:0;right:0;bottom:37%;height:28%;display:flex;align-items:flex-end;gap:.5%;padding:0 1%;opacity:.85}
+.bg-skyline i{
+  flex:1;display:block;height:20%;
+  background:linear-gradient(180deg,currentColor, rgba(0,0,0,.25));
+  border-top:3px solid currentColor;
+  box-shadow:0 0 12px currentColor;
+  transition:height .09s linear;
+  opacity:.55;
+}
+
+.bg-floor{
+  position:absolute;left:-30%;right:-30%;bottom:0;height:40%;
+  perspective:150px;perspective-origin:50% 0%;
+  overflow:hidden;
+  background:linear-gradient(180deg,#2a0640,#120225);
+}
+.bg-grid{
+  position:absolute;inset:-120% 0 -40% 0;
+  transform:rotateX(76deg);transform-origin:50% 0%;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,45,149,.75) 0 2px, transparent 2px 86px),
+    repeating-linear-gradient(0deg,  rgba(34,227,255,.55) 0 2px, transparent 2px 86px);
+  animation:gridRun var(--bar,1.875s) linear infinite;
+  will-change:background-position;
+}
+@keyframes gridRun{to{background-position:0 86px, 0 86px}}
+
+.bg-beams{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.34}
+.bg-beams i{
+  position:absolute;top:-10%;width:13vmin;height:130%;
+  background:linear-gradient(180deg,currentColor,transparent 68%);
+  filter:blur(26px);transform-origin:50% 0;
+  animation:beam 7.5s ease-in-out infinite;
+}
+.bg-beams i:nth-child(1){color:#ff2d95;animation-delay:0s;   left:18%}
+.bg-beams i:nth-child(2){color:#22e3ff;animation-delay:-1.9s;left:38%}
+.bg-beams i:nth-child(3){color:#4fe36b;animation-delay:-3.8s;left:62%}
+.bg-beams i:nth-child(4){color:#ffd21e;animation-delay:-5.6s;left:82%}
+@keyframes beam{0%,100%{transform:rotate(-14deg) scaleY(.9);opacity:.3}50%{transform:rotate(14deg) scaleY(1.1);opacity:.75}}
+
+.bg-scan{
+  position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:repeating-linear-gradient(180deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px);
+  opacity:.45;
+}
+
+/* fever dyes the whole stage */
+#app.fever .bg-sky{filter:hue-rotate(-28deg) saturate(1.45) brightness(1.2)}
+#app.fever .bg-grid{animation-duration:.94s}
+#app.fever .bg-beams{opacity:.85}
+
+/* ============================ HUD ============================ */
+.hud{
+  position:relative;z-index:3;
+  flex:0 0 auto;
+  padding:calc(env(safe-area-inset-top,0px) + 8px) 10px 4px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  grid-template-areas:"plate right" "groove groove";
+  gap:6px 8px;
+  pointer-events:none;
+}
+.hud-plate{
+  grid-area:plate;
+  border:2px solid var(--magenta);
+  border-radius:6px;
+  background:rgba(12,2,28,.62);
+  box-shadow:0 0 14px rgba(255,45,149,.55), inset 0 0 18px rgba(255,45,149,.18);
+  padding:7px 10px;
+  display:grid;gap:5px;
+  justify-self:start;
+}
+.hud-stage{font-size:8px;color:var(--green);text-shadow:0 0 8px var(--green)}
+.hud-song{font-size:11px;color:#fff;letter-spacing:.5px;text-shadow:0 0 10px var(--cyan)}
+.hud-score{font-size:8px;color:var(--yellow);text-shadow:0 0 8px var(--orange)}
+.hud-score span{color:#fff}
+
+.hud-right{grid-area:right;display:flex;align-items:flex-start}
+.bpm{
+  width:52px;height:52px;border-radius:50%;
+  border:2px solid var(--cyan);
+  background:rgba(10,2,26,.6);
+  display:grid;place-content:center;gap:1px;text-align:center;
+  box-shadow:0 0 14px var(--cyan), inset 0 0 12px rgba(34,227,255,.3);
+}
+.bpm.beating{animation:bpmBeat var(--beat,.469s) steps(1,end) infinite}
+.bpm b{font-size:11px;color:#fff}
+.bpm span{font-size:6px;color:var(--cyan)}
+@keyframes bpmBeat{0%{transform:scale(1.07);filter:brightness(1.5)}30%,100%{transform:scale(1);filter:none}}
+
+.groove{grid-area:groove;display:grid;gap:3px;max-width:min(62%,340px)}
+.groove-bar{height:9px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;box-shadow:inset 0 0 6px #000}
+.groove-bar i{
+  display:block;height:100%;width:50%;
+  background:linear-gradient(90deg,var(--purple),var(--magenta),var(--pink));
+  box-shadow:0 0 12px var(--magenta);
+  transition:width .18s ease-out;
+}
+.groove-pips{display:flex;gap:2px}
+.groove-pips i{flex:1;height:7px;background:rgba(255,255,255,.14);box-shadow:inset 0 0 3px #000}
+.groove-pips i.on{background:var(--cyan);box-shadow:0 0 7px var(--cyan)}
+.groove-pips i.on.mid{background:var(--green);box-shadow:0 0 7px var(--green)}
+.groove-pips i.on.hi{background:var(--yellow);box-shadow:0 0 7px var(--yellow)}
+.groove-label{font-size:6px;color:#b9a6d8;letter-spacing:1px}
+
+/* ============================ DANCER STAGE ============================ */
+.stage{
+  position:relative;z-index:2;
+  flex:1 1 auto;min-height:0;
+}
+.spot{
+  position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  width:min(58vw,280px);height:clamp(40px,15%,72px);border-radius:50%;
+  border:2px solid rgba(34,227,255,.55);
+  box-shadow:0 0 22px rgba(34,227,255,.45), inset 0 0 30px rgba(255,45,149,.35);
+  animation:spotPulse calc(var(--beat,.469s) * 2) ease-in-out infinite;
+}
+.spot::after{
+  content:"";position:absolute;inset:14%;border-radius:50%;
+  border:2px solid rgba(255,45,149,.5);
+}
+@keyframes spotPulse{50%{transform:translateX(-50%) scale(1.07);border-color:var(--accent,#ffd21e)}}
+
+/* Absolutely positioned with both top and bottom set, so the box has a definite
+   height and the sprite's height:100% actually resolves. Centring is done with
+   flex rather than translateX so the step animations own `transform` outright. */
+.dancer{
+  position:absolute;left:0;right:0;top:1%;bottom:12px;
+  display:flex;align-items:flex-end;justify-content:center;
+  transform-origin:50% 100%;
+  will-change:transform;
+}
+.dancer img{
+  height:100%;width:auto;display:block;
+  filter:drop-shadow(0 0 16px rgba(255,45,149,.55)) drop-shadow(0 6px 10px rgba(0,0,0,.6));
+  transform-origin:50% 100%;
+}
+.dancer img.flip{transform:scaleX(-1)}
+.dancer .shadow{
+  position:absolute;bottom:-6px;left:50%;margin-left:-22vmin;
+  width:44vmin;max-width:220px;height:12px;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(0,0,0,.55), transparent);
+}
+/* pose motion - classes toggled from JS */
+.dancer.bob    {animation:bob var(--beat,.469s) ease-out}
+.dancer.stepL  {animation:stepL .3s ease-out}
+.dancer.stepR  {animation:stepR .3s ease-out}
+.dancer.jump   {animation:jump .42s cubic-bezier(.3,-.2,.4,1.4)}
+.dancer.duck   {animation:duck .32s ease-out}
+.dancer.miss   {animation:missShake .3s ease-out}
+@keyframes bob   {0%{transform:translateY(0) scale(1,1)}35%{transform:translateY(-3%) scale(.98,1.03)}100%{transform:none}}
+@keyframes stepL {0%{transform:none}40%{transform:translateX(-9%) rotate(-5deg) scale(1.03)}100%{transform:none}}
+@keyframes stepR {0%{transform:none}40%{transform:translateX(9%) rotate(5deg) scale(1.03)}100%{transform:none}}
+@keyframes jump  {0%{transform:translateY(0) scale(1.04,.93)}45%{transform:translateY(-14%) scale(.97,1.06)}100%{transform:none}}
+@keyframes duck  {0%{transform:none}40%{transform:translateY(3%) scale(1.07,.9)}100%{transform:none}}
+@keyframes missShake{0%,100%{transform:none}25%{transform:translateX(-4%) rotate(-3deg)}75%{transform:translateX(4%) rotate(3deg)}}
+.dancer.twirl  {animation:twirl .5s cubic-bezier(.3,.1,.3,1)}
+@keyframes twirl{0%{transform:none}50%{transform:rotate(-12deg) scale(1.08) translateY(-7%)}100%{transform:none}}
+/* fever turns every move up a notch */
+.dancer.hot{animation-duration:.34s}
+.dancer.hot.stepL{animation-name:stepLhot}
+.dancer.hot.stepR{animation-name:stepRhot}
+.dancer.hot.jump {animation-name:jumpHot}
+@keyframes stepLhot{0%{transform:none}40%{transform:translateX(-14%) rotate(-9deg) scale(1.07)}100%{transform:none}}
+@keyframes stepRhot{0%{transform:none}40%{transform:translateX(14%) rotate(9deg) scale(1.07)}100%{transform:none}}
+@keyframes jumpHot {0%{transform:translateY(0) scale(1.06,.9)}45%{transform:translateY(-21%) scale(.95,1.09)}100%{transform:none}}
+#app.fever .dancer img{filter:drop-shadow(0 0 26px var(--yellow)) drop-shadow(0 0 12px var(--magenta))}
+
+/* judgement + combo - sit over the highway, anchored at its far end so the
+   read-out never crowds the receptors the player is watching */
+.stage-fx{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding-top:15%;gap:2px;text-align:center;
+}
+#app.scrollup .stage-fx{justify-content:flex-end;padding-top:0;padding-bottom:15%}
+.judge{
+  font-family:var(--display);font-size:clamp(22px,7vmin,46px);
+  line-height:1;letter-spacing:1px;opacity:0;
+  -webkit-text-stroke:4px #1a0433;paint-order:stroke fill;
+  /* dark halo so the read-out stays legible over passing notes */
+  text-shadow:0 4px 0 rgba(0,0,0,.45), 0 0 16px rgba(5,0,14,.95), 0 0 34px rgba(5,0,14,.8);
+}
+.judge.pop{animation:judgePop .52s ease-out}
+@keyframes judgePop{0%{opacity:0;transform:scale(.6)}18%{opacity:1;transform:scale(1.14)}40%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(1.02)}}
+.judge.perfect{color:var(--yellow)}
+.judge.great  {color:var(--cyan)}
+.judge.good   {color:var(--green)}
+.judge.bad    {color:var(--orange)}
+.judge.miss   {color:#ff4d6d}
+
+.combo{opacity:0;display:grid;gap:2px;transform:translateY(-4px)}
+.combo.show{opacity:1}
+.combo b{
+  font-family:var(--display);font-size:clamp(30px,11vmin,62px);line-height:1;
+  color:#fff;-webkit-text-stroke:4px #45108a;paint-order:stroke fill;
+  text-shadow:0 0 18px var(--magenta), 0 0 30px rgba(5,0,14,.95);
+}
+.combo span{font-size:9px;color:var(--pink);letter-spacing:3px;text-shadow:0 0 8px var(--magenta)}
+.combo.bump b{animation:comboBump .22s ease-out}
+@keyframes comboBump{0%{transform:scale(1.28)}100%{transform:scale(1)}}
+#app.fever .combo b{color:var(--yellow);text-shadow:0 0 22px var(--orange)}
+
+/* hazard banner */
+.banner{
+  position:absolute;left:0;right:0;top:34%;
+  display:none;align-items:center;
+  z-index:5;
+}
+.banner.show{display:flex;animation:bannerIn .42s ease-out}
+@keyframes bannerIn{0%{transform:scaleX(.2);opacity:0}100%{transform:none;opacity:1}}
+.banner-tape{
+  flex:1;height:26px;
+  background:repeating-linear-gradient(135deg,var(--yellow) 0 12px,#1a0433 12px 24px);
+  box-shadow:0 0 14px rgba(255,210,30,.6);
+}
+.banner span{
+  font-family:var(--display);font-size:clamp(13px,4.2vw,24px);
+  padding:6px 14px;background:#1a0433;color:var(--yellow);
+  border-top:3px solid var(--yellow);border-bottom:3px solid var(--yellow);
+  white-space:nowrap;text-shadow:0 0 12px var(--orange);
+}
+
+/* big centred callouts: ARCADE DANCE! / FULL COMBO!! / STAGE CLEAR */
+.bigtext{
+  position:absolute;left:0;right:0;top:28%;z-index:6;
+  display:none;text-align:center;padding:0 12px;
+}
+.bigtext.show{display:block;animation:bigIn .5s cubic-bezier(.2,1.5,.4,1)}
+@keyframes bigIn{0%{transform:scale(.4);opacity:0}100%{transform:none;opacity:1}}
+.bigtext b{
+  display:block;font-family:var(--display);line-height:1.1;
+  font-size:clamp(28px,10vw,62px);
+  color:var(--yellow);-webkit-text-stroke:4px #2a0450;paint-order:stroke fill;
+  text-shadow:0 5px 0 rgba(0,0,0,.5), 0 0 26px var(--orange);
+}
+.bigtext i{
+  display:block;font-style:normal;font-family:var(--display);
+  font-size:clamp(18px,6.5vw,40px);margin-top:6px;
+  color:var(--cyan);-webkit-text-stroke:4px #10224a;paint-order:stroke fill;
+  text-shadow:0 0 22px var(--cyan);
+}
+
+/* ============================ NOTE HIGHWAY ============================ */
+.panel{
+  position:relative;z-index:4;
+  flex:0 0 var(--panel-h);
+  border-top:2px solid rgba(255,45,149,.5);
+  background:
+    radial-gradient(120% 80% at 50% 100%, rgba(139,61,240,.22), transparent 70%),
+    linear-gradient(180deg,#160330,#08011a);
+  box-shadow:0 -10px 40px rgba(0,0,0,.6);
+  padding-bottom:var(--safe-b);
+  display:flex;flex-direction:column;
+}
+.panel-label{
+  position:absolute;top:4px;left:0;right:0;
+  display:flex;justify-content:center;gap:26px;
+  font-size:7px;color:#cbb6e8;letter-spacing:2px;opacity:.8;pointer-events:none;z-index:2;
+}
+#highway{flex:1 1 auto;width:100%;height:100%;display:block}
+
+.pads{
+  position:absolute;inset:0;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding-bottom:var(--safe-b);
+}
+.pad{
+  -webkit-appearance:none;appearance:none;
+  border:0;background:transparent;margin:0;padding:0;
+  touch-action:none;cursor:pointer;
+  position:relative;
+}
+.pad::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% var(--padY,100%), rgba(255,255,255,.22), transparent 62%);
+  opacity:0;transition:opacity .09s;
+}
+.pad.hit::after{opacity:1}
+
+/* ============================ FOOTER ============================ */
+.footer{
+  position:absolute;left:10px;bottom:5px;z-index:3;
+  display:flex;gap:6px;align-items:center;
+  font-size:7px;color:#8f7ab5;letter-spacing:1px;pointer-events:none;
+}
+.blink{animation:blink 1.2s steps(1,end) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ============================ OVERLAYS ============================ */
+.overlay{
+  position:absolute;inset:0;z-index:20;
+  display:none;place-items:center;padding:18px;
+  background:radial-gradient(70% 70% at 50% 45%, rgba(26,4,51,.86), rgba(5,1,12,.95));
+  overflow:auto;
+}
+.overlay.show{display:grid}
+.ov-card{
+  width:min(440px,100%);
+  border:2px solid var(--magenta);border-radius:10px;
+  background:linear-gradient(180deg, rgba(32,6,62,.92), rgba(12,2,28,.95));
+  box-shadow:0 0 30px rgba(255,45,149,.5), inset 0 0 40px rgba(139,61,240,.25);
+  padding:20px 16px;text-align:center;
+}
+
+.logo{margin:0 0 6px;font-family:var(--display);line-height:1}
+.logo span,.logo em{
+  display:block;font-style:normal;font-size:clamp(26px,9vw,46px);color:var(--yellow);
+  -webkit-text-stroke:4px #2a0450;paint-order:stroke fill;
+  text-shadow:0 5px 0 rgba(0,0,0,.5),0 0 26px var(--orange);
+}
+.logo em{text-shadow:0 5px 0 rgba(0,0,0,.5),0 0 26px var(--magenta)}
+.sub{font-size:7px;color:var(--cyan);letter-spacing:1px;margin:0 0 16px;text-shadow:0 0 8px var(--cyan)}
+
+.opts{display:grid;gap:11px;margin-bottom:18px;text-align:left}
+.opt{text-align:left}
+
+/* song select */
+.songs{display:grid;gap:6px;margin-bottom:16px}
+.song{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;padding:9px 10px 9px 12px;cursor:pointer;text-align:left;
+  font-family:var(--pixel);
+  color:#cbb6e8;background:rgba(255,255,255,.05);
+  border:2px solid rgba(255,255,255,.16);border-left:5px solid var(--sa,#ff2d95);
+  border-radius:5px;transition:.12s;
+}
+.song.on{
+  color:#fff;background:rgba(255,255,255,.12);
+  border-color:var(--sa,#ff2d95);border-left-color:var(--sa,#ff2d95);
+  box-shadow:0 0 16px -2px var(--sa,#ff2d95), inset 0 0 20px -12px var(--sa,#ff2d95);
+}
+.s-main{display:grid;gap:4px;min-width:0}
+.s-main b{font-size:10px;letter-spacing:.5px;white-space:nowrap}
+.s-main i{font-style:normal;font-size:6px;color:#9b86c2;letter-spacing:1px}
+.song.on .s-main i{color:var(--sa,#ff2d95)}
+.s-meta{display:grid;gap:4px;justify-items:end;flex:0 0 auto}
+.s-meta b{font-size:11px;display:flex;align-items:baseline;gap:2px}
+.s-meta b em{font-style:normal;font-size:5px;color:#9b86c2}
+.s-meta i{font-style:normal;font-size:9px;color:var(--sa,#ff2d95);letter-spacing:1px}
+.opt label{display:block;font-family:var(--kr);font-size:11px;font-weight:700;color:#b9a6d8;margin-bottom:5px;letter-spacing:.5px}
+.seg{display:flex;gap:5px;flex-wrap:wrap}
+.seg button{
+  flex:1 1 auto;min-width:56px;
+  font-family:var(--pixel);font-size:9px;
+  padding:9px 4px;color:#cbb6e8;cursor:pointer;
+  background:rgba(255,255,255,.05);
+  border:2px solid rgba(255,255,255,.18);border-radius:5px;
+  transition:.12s;
+}
+.seg button.on{
+  color:#120225;background:var(--cyan);border-color:#fff;
+  box-shadow:0 0 14px var(--cyan);
+}
+
+.start{
+  font-family:var(--display);font-size:clamp(14px,4.6vw,20px);
+  width:100%;padding:14px 10px;cursor:pointer;
+  color:#2a0450;background:linear-gradient(180deg,var(--yellow),var(--orange));
+  border:3px solid #fff;border-radius:8px;
+  box-shadow:0 0 22px rgba(255,210,30,.65), 0 5px 0 #a84d00;
+  animation:startPulse 1.2s ease-in-out infinite;
+}
+.start:active{transform:translateY(3px);box-shadow:0 0 22px rgba(255,210,30,.65),0 2px 0 #a84d00}
+@keyframes startPulse{50%{filter:brightness(1.18)}}
+.start.sm{font-size:14px;padding:12px 8px;animation:none}
+.start.ghost{background:transparent;color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 16px rgba(34,227,255,.4),0 5px 0 #0a3b4a}
+.hint{font-family:var(--kr);font-size:11px;color:#8f7ab5;margin:12px 0 0;line-height:1.7}
+
+/* result */
+.result h2{
+  margin:0 0 10px;font-family:var(--display);font-size:clamp(20px,7vw,34px);
+  color:var(--cyan);-webkit-text-stroke:3px #10224a;paint-order:stroke fill;
+  text-shadow:0 0 22px var(--cyan);
+}
+.result.fail h2{color:#ff4d6d;-webkit-text-stroke-color:#3d0010;text-shadow:0 0 22px #ff4d6d}
+.rank{
+  font-family:var(--display);font-size:72px;line-height:1;margin:2px 0 14px;
+  color:var(--yellow);-webkit-text-stroke:5px #2a0450;paint-order:stroke fill;
+  text-shadow:0 0 34px var(--orange);
+  animation:rankIn .6s cubic-bezier(.2,1.6,.4,1) both;
+}
+@keyframes rankIn{0%{transform:scale(2.4) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}
+.rows{display:grid;gap:5px;margin-bottom:16px}
+.row{display:flex;justify-content:space-between;align-items:center;font-size:8px;padding:7px 10px;border-radius:4px;background:rgba(255,255,255,.05)}
+.row b{font-size:10px}
+.row.perfect{color:var(--yellow)} .row.great{color:var(--cyan)}
+.row.good{color:var(--green)}     .row.miss{color:#ff4d6d}
+.row.total{color:#fff;background:rgba(255,45,149,.16)}
+.res-btns{display:flex;gap:8px}
+.pausehead{margin:0 0 16px;font-family:var(--display);font-size:26px;color:var(--yellow);text-shadow:0 0 18px var(--orange)}
+
+/* countdown */
+.countdown{position:absolute;inset:0;z-index:15;display:none;place-items:center;pointer-events:none}
+.countdown.show{display:grid}
+.countdown b{
+  font-family:var(--display);font-size:clamp(70px,26vw,170px);line-height:1;
+  color:var(--green);-webkit-text-stroke:6px #07321a;paint-order:stroke fill;
+  text-shadow:0 0 40px var(--green);
+  animation:countPop .46s ease-out;
+}
+@keyframes countPop{0%{transform:scale(2.2);opacity:0}30%{transform:scale(1);opacity:1}100%{transform:scale(.9);opacity:.15}}
+
+.pausebtn{
+  position:absolute;z-index:12;top:calc(env(safe-area-inset-top,0px) + 66px);right:10px;
+  width:34px;height:34px;border-radius:50%;cursor:pointer;
+  font-family:var(--pixel);font-size:9px;letter-spacing:-1px;
+  color:var(--cyan);background:rgba(10,2,26,.62);border:2px solid var(--cyan);
+  box-shadow:0 0 10px rgba(34,227,255,.5);
+  display:none;place-items:center;
+}
+.pausebtn.show{display:grid}
+
+/* ================== LANDSCAPE = ARCADE CABINET LAYOUT ================== */
+@media (min-aspect-ratio: 1/1){
+  #app{
+    display:grid;
+    grid-template-columns:1fr minmax(230px,36%);
+    grid-template-rows:100%;
+  }
+  .screen{min-width:0}
+  .panel{
+    flex:1 1 auto;
+    border-top:0;border-left:2px solid rgba(255,45,149,.5);
+    box-shadow:-10px 0 40px rgba(0,0,0,.6);
+  }
+  .dancer{top:4%}
+  .groove{max-width:min(80%,340px)}
+  .pausebtn{top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(36% + 10px)}
+}
+
+/* short screens (landscape phones): keep the cards inside one screenful */
+@media (max-height:540px){
+  .ov-card{padding:14px}
+  .logo span,.logo em{font-size:26px}
+  .sub{margin-bottom:10px}
+  .opts{gap:7px;margin-bottom:12px}
+  .seg button{padding:7px 4px}
+  .start{padding:10px 8px}
+  .hint{margin-top:8px}
+  .result h2{font-size:19px;margin-bottom:6px}
+  .rank{font-size:44px;margin:0 0 8px}
+  .rows{gap:3px;margin-bottom:10px}
+  .row{padding:5px 9px}
+}
+
+@media (max-height:620px) and (orientation:portrait){
+  :root{--panel-h:46%}
+  .hud-song{font-size:9px}
+  .bpm{width:44px;height:44px}
+}
