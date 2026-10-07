@@ -381,13 +381,14 @@ img{max-width:100%}
   padding:20px 16px;text-align:center;
 }
 
-.logo{margin:0 0 6px;font-family:var(--display);line-height:1.08;letter-spacing:1px}
+/* one line - nowrap because the two halves are inline and must not split */
+.logo{margin:0 0 6px;font-family:var(--display);line-height:1.12;letter-spacing:1px;white-space:nowrap}
 .logo span,.logo em{
-  display:block;font-style:normal;font-size:clamp(26px,9vw,46px);color:var(--yellow);
+  display:inline;font-style:normal;font-size:clamp(26px,11.5vw,54px);color:var(--yellow);
   -webkit-text-stroke:3px #2a0450;paint-order:stroke fill;
   text-shadow:0 5px 0 rgba(0,0,0,.5),0 0 26px var(--orange);
 }
-.logo em{text-shadow:0 5px 0 rgba(0,0,0,.5),0 0 26px var(--magenta)}
+.logo em{margin-left:.3em;text-shadow:0 5px 0 rgba(0,0,0,.5),0 0 26px var(--magenta)}
 .sub{font-size:7px;color:var(--cyan);letter-spacing:1px;margin:0 0 16px;text-shadow:0 0 8px var(--cyan)}
 
 .opts{display:grid;gap:11px;margin-bottom:18px;text-align:left}

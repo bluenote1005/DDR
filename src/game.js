@@ -414,7 +414,7 @@
 
   function buildTimeline() {
     var b = Snd.spb, bar = Snd.spbar, ev = [];
-    ev.push({ t: 0.05, fn: function () { showBig('서영이와', '춤을!', 1500); } });
+    ev.push({ t: 0.05, fn: function () { showBig('서영이와 춤을!', null, 1500); } });
     ev.push({ t: b * 2, fn: function () { showCount('3'); } });
     ev.push({ t: b * 4, fn: function () { showCount('2'); } });
     ev.push({ t: b * 6, fn: function () { showCount('1'); } });
