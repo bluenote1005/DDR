@@ -59,9 +59,41 @@
 
   var ARP = [0, 2, 1, 2, 0, 1, 2, 1];
 
+  /* -----------------------------------------------------------------------
+     Silent-switch handling (iOS)
+
+     iOS plays Web Audio through the "ambient" audio session, which the ringer
+     switch silences - so the game went quiet on a muted phone. Declaring
+     playback intent moves it to the category that ignores the switch.
+     Safari 16.4+ exposes navigator.audioSession for exactly this; older iOS
+     needs an HTMLAudioElement to actually be playing, which flips the session
+     category as a side effect.
+
+     Because this overrides a hardware switch, the game carries its own mute
+     button - see the speaker toggle in the HUD.
+     ----------------------------------------------------------------------- */
+  function silentWavUrl(seconds) {
+    var sr = 8000, n = Math.round(sr * seconds);
+    var buf = new ArrayBuffer(44 + n), v = new DataView(buf), i;
+    function str(off, t) { for (var k = 0; k < t.length; k++) v.setUint8(off + k, t.charCodeAt(k)); }
+    str(0, 'RIFF');  v.setUint32(4, 36 + n, true);
+    str(8, 'WAVEfmt ');
+    v.setUint32(16, 16, true);          // fmt chunk size
+    v.setUint16(20, 1, true);           // PCM
+    v.setUint16(22, 1, true);           // mono
+    v.setUint32(24, sr, true);
+    v.setUint32(28, sr, true);          // byte rate
+    v.setUint16(32, 1, true);           // block align
+    v.setUint16(34, 8, true);           // bits per sample
+    str(36, 'data'); v.setUint32(40, n, true);
+    for (i = 0; i < n; i++) v.setUint8(44 + i, 128);   // 8-bit silence
+    return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  }
+
   /* ------------------------------------------------------------------ */
   var Snd = {
     ctx: null, master: null, musicBus: null, sfxBus: null, noise: null,
+    _silent: null, muted: false,
     startedAt: 0, playing: false,
     _timer: null, _step: 0,
 
@@ -72,6 +104,7 @@
 
     /* ---------------------------------------------------------------- */
     init: function () {
+      this.claimPlayback();
       if (this.ctx) return this.ctx;
       var AC = global.AudioContext || global.webkitAudioContext;
       var ctx = this.ctx = new AC();
@@ -94,8 +127,32 @@
     },
 
     resume: function () {
+      this.claimPlayback();
       if (this.ctx && this.ctx.state === 'suspended') return this.ctx.resume();
       return Promise.resolve();
+    },
+
+    /** ask iOS for the audio session that ignores the ringer switch */
+    claimPlayback: function () {
+      try {
+        if (global.navigator && navigator.audioSession) {
+          navigator.audioSession.type = 'playback';   // Safari 16.4+
+          return;
+        }
+      } catch (e) { /* not supported - fall through */ }
+
+      if (this._silent) {                              // older iOS
+        if (this._silent.paused) { var r = this._silent.play(); if (r && r.catch) r.catch(function () {}); }
+        return;
+      }
+      try {
+        var a = this._silent = new Audio(silentWavUrl(0.25));
+        a.loop = true;
+        a.volume = 0.001;
+        a.setAttribute('playsinline', '');
+        var p = a.play();
+        if (p && p.catch) p.catch(function () {});
+      } catch (e2) { this._silent = null; }
     },
 
     setSong: function (id) {
@@ -115,7 +172,18 @@
       return 'end';
     },
 
-    setMuted: function (m) { if (this.master) this.master.gain.value = m ? 0 : MASTER_GAIN; },
+    setMuted: function (m) {
+      this.muted = !!m;
+      if (this.master) this.master.gain.value = m ? 0 : MASTER_GAIN;
+      try { localStorage.setItem('ad_muted', m ? '1' : '0'); } catch (e) {}
+      return this.muted;
+    },
+
+    loadMuted: function () {
+      try { this.muted = localStorage.getItem('ad_muted') === '1'; } catch (e) { this.muted = false; }
+      if (this.master) this.master.gain.value = this.muted ? 0 : MASTER_GAIN;
+      return this.muted;
+    },
 
     /** song position in seconds (negative during the lead-in) */
     time: function () { return this.ctx ? this.ctx.currentTime - this.startedAt : 0; },

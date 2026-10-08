@@ -506,6 +506,7 @@ img{max-width:100%}
 }
 @keyframes countPop{0%{transform:scale(2.2);opacity:0}30%{transform:scale(1);opacity:1}100%{transform:scale(.9);opacity:.15}}
 
+.soundbtn,
 .pausebtn{
   position:absolute;z-index:12;top:calc(env(safe-area-inset-top,0px) + 66px);right:10px;
   width:34px;height:34px;border-radius:50%;cursor:pointer;
@@ -515,6 +516,11 @@ img{max-width:100%}
   display:none;place-items:center;
 }
 .pausebtn.show{display:grid}
+
+/* sound toggle - always available, because claiming the iOS playback session
+   means the phone's own mute switch no longer silences the game */
+.soundbtn{display:grid;top:calc(env(safe-area-inset-top,0px) + 108px);font-size:12px}
+.soundbtn.off{color:#8f7ab5;border-color:#8f7ab5;box-shadow:none;opacity:.75}
 
 /* ================== LANDSCAPE = ARCADE CABINET LAYOUT ================== */
 @media (min-aspect-ratio: 1/1){
@@ -532,6 +538,7 @@ img{max-width:100%}
   .dancer{top:4%}
   .groove{max-width:min(80%,340px)}
   .pausebtn{top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(36% + 10px)}
+  .soundbtn{top:calc(env(safe-area-inset-top,0px) + 52px);right:calc(36% + 10px)}
 }
 
 /* short screens (landscape phones): keep the cards inside one screenful */

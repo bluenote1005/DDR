@@ -33,6 +33,7 @@
   var elBig = $('bigtext'), elCount = $('countdown');
   var elPoses = $('poses'), elDancer = $('dancer');
   var elSkyline = $('skyline'), elBpm = $('bpmBadge'), elPause = $('pauseBtn');
+  var elSound = $('soundBtn');
   var elSongTitle = $('songTitle'), elBpmVal = $('bpmVal'), elSongList = $('songList');
   var titleScreen = $('titleScreen'), resultScreen = $('resultScreen'), pauseScreen = $('pauseScreen');
 
@@ -720,6 +721,19 @@
   $('quitBtn').addEventListener('click', function () { toTitle(); });
   elPause.addEventListener('click', function () { togglePause(true); });
 
+  /* ------------------------------ sound ----------------------------- */
+  function paintSound() {
+    elSound.textContent = Snd.muted ? '×' : '♪';
+    elSound.classList.toggle('off', Snd.muted);
+    elSound.setAttribute('aria-pressed', Snd.muted ? 'true' : 'false');
+  }
+  elSound.addEventListener('click', function () {
+    Snd.init();                       // also claims the iOS playback session
+    Snd.setMuted(!Snd.muted);
+    paintSound();
+    if (!Snd.muted) Snd.resume().then(function () { Snd.sfx('ui'); });
+  });
+
   document.addEventListener('visibilitychange', function () {
     if (document.hidden && S.phase === 'playing') togglePause(true);
   });
@@ -727,6 +741,8 @@
   /* ----------------------------- boot ------------------------------- */
   buildSongList();
   applySong(Snd.songs[0].id);
+  Snd.loadMuted();
+  paintSound();
   setPose('peace');   // stage shows her behind the title overlay
   layout();
   updateHud();
